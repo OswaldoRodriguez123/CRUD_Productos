@@ -1,62 +1,56 @@
 <?php
     class Product{
 
-        public function __construct(){
-            $this->db = new Db;
+        function sendToAPI($url,$type,$data = ''){
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL,$url); 
+            // curl_setopt($ch, CURLOPT_SSLVERSION, 1);
+            // curl_setopt($ch, CURLOPT_SSL_CIPHER_LIST, 'TLSv1');
+            // curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            // curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLINFO_HEADER_OUT, true);
+
+            if($type == 'POST'){
+                $data = array('data' => $data);
+                curl_setopt($ch, CURLOPT_POST, true);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+            }
+            $response = curl_exec($ch);
+            curl_close($ch);
+            $ToReturn = json_decode($response, true);
+            return $ToReturn;
         }
 
         function getProducts(){
-            $query = "  SELECT
-                            p.id,
-                            p.code,
-                            p.name,
-                            c.name AS category,
-                            p.stock,
-                            p.price 
-                        FROM
-                            products p
-                            INNER JOIN categories c ON p.category_id = c.id";
-            $ToReturn = $this->db->select($query);
+            $url='http://localhost/CRUD_Productos/api/products/getProducts.php';
+            $ToReturn = $this->sendToAPI($url,'GET');
             return $ToReturn;
         }
         function getCategories(){
-            $query = "  SELECT
-                            id,
-                            name
-                        FROM
-                            categories";
-            $ToReturn = $this->db->select($query);
+            $url='http://localhost/CRUD_Productos/api/products/getCategories.php';
+            $ToReturn = $this->sendToAPI($url,'GET');
             return $ToReturn;
         }
-        public function storeProduct($code,$name,$category_id,$stock,$price){
-            $query = "INSERT INTO products (code, name, category_id, stock, price, created_at) VALUES ('".$code."', '".$name."', '".$category_id."', '".$stock."', '".$price."', NOW())";
-            $ToReturn = $this->db->insert($query);
+        public function storeProduct($data){
+            $url='http://localhost/CRUD_Productos/api/products/storeProduct.php';
+            $ToReturn = $this->sendToAPI($url,'POST',$data);
             return $ToReturn;
             
         }
-        function getProduct($id){
-            $query = "  SELECT
-                            id,
-                            code,
-                            name,
-                            category_id,
-                            stock,
-                            price
-                        FROM
-                            products
-                        WHERE
-                            id = '".$id."'";
-            $ToReturn = $this->db->select($query);
-            return $ToReturn[0];
-        }
-        public function updateProduct($code,$name,$category_id,$stock,$price,$id){
-            $query = "UPDATE products SET name = '".$name."', category_id = '".$category_id."', stock = '".$stock."', price = '".$price."', updated_at = NOW() WHERE id = '".$id."'";
-            $ToReturn = $this->db->update($query);
+        function getProduct($data){
+            $url='http://localhost/CRUD_Productos/api/products/getProduct.php';
+            $ToReturn = $this->sendToAPI($url,'POST',$data);
             return $ToReturn;
         }
-        public function deleteProduct($id){
-            $query = "DELETE FROM products WHERE id = '".$id."'";
-            $ToReturn = $this->db->delete($query);
+        public function updateProduct($data){
+            $url='http://localhost/CRUD_Productos/api/products/updateProduct.php';
+            $ToReturn = $this->sendToAPI($url,'POST',$data);
+            return $ToReturn;
+        }
+        public function deleteProduct($data){
+            $url='http://localhost/CRUD_Productos/api/products/deleteProduct.php';
+            $ToReturn = $this->sendToAPI($url,'POST',$data);
             return $ToReturn;
         }
     }
